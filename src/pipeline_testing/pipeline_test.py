@@ -13,7 +13,7 @@ WAVE_OUTPUT_FILENAME = "file.wav"
 audio = pyaudio.PyAudio()
 vad = webrtcvad.Vad(3)
 
-# start Recording
+# startcd  Recording
 stream = audio.open(format=FORMAT, channels=CHANNELS,
                 rate=RATE, input=True,
                 frames_per_buffer=CHUNK)
@@ -42,8 +42,12 @@ speech_total = 0
 
 samples =  int(RATE*RECORD_SECONDS/(RATE * frame_duration / 1000))
 
+#print(frames)
+
+
 for i in range(0, samples):
 	sample = ''.join(frames[((RATE * frame_duration / 1000))*i : ((RATE * frame_duration / 1000))*(i+1)])
+	print(len(sample))
 	speech_exists = vad.is_speech(sample, RATE)
 	speech_total = speech_total + speech_exists
 	print('Contains speech: %s' % (vad.is_speech(sample, RATE)))

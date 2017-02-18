@@ -9,10 +9,10 @@ music = wave.open("music.wav", "r")
 
 
 
-music.readframes(10000000)
+music.readframes(900000)
 
-music_frames = music.readframes(220160)
-voice_frames = voice.readframes(220160)
+music_frames = music.readframes(80000)
+voice_frames = voice.readframes(160000)
 
 
 u = np.fromstring(music_frames, np.int16)
@@ -57,8 +57,8 @@ y, e, w = adf.nlms(u, d, M, step, returnCoeffs=True)
 
 scaled = np.int16(e/np.max(np.abs(e)) * 32767)
 
-write('test.wav', 44100, scaled)
+write('test.wav', 32000, scaled)
 
 scaled_u = np.int16(u/np.max(np.abs(u)) * 32767)
 
-write('new_musc.wav', 44100, scaled_u)
+write('new_musc.wav', 64000, scaled_u)
