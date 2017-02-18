@@ -44,15 +44,12 @@ samples =  int(RATE*RECORD_SECONDS/(RATE * frame_duration / 1000))
 
 for i in range(0, samples):
 	sample = ''.join(frames[((RATE * frame_duration / 1000))*i : ((RATE * frame_duration / 1000))*(i+1)])
-	print(len(sample))
 	speech_exists = vad.is_speech(sample, RATE)
 	speech_total = speech_total + speech_exists
 	print('Contains speech: %s' % (vad.is_speech(sample, RATE)))
 
 speech_ratio = speech_total/float(samples)
 
-
-print(len(frame))
 
 print(speech_ratio)
 
