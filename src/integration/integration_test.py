@@ -4,6 +4,8 @@ import wave
 import numpy as np
 import adaptfilt as adf
 from scipy.io.wavfile import write
+import speech_recognition as sr
+from os import path
 
 #CONSTANTS
 FORMAT = pyaudio.paInt16
@@ -50,7 +52,7 @@ music = wave.open("music.wav", "r")
 voice = wave.open("voice.wav", "r")
 
 
-music.readframes(1000000)
+music.readframes(10000000)
 
 music_frames = music.readframes(80000)
 voice_frames = voice.readframes(160000)
@@ -80,26 +82,38 @@ voice_len = len(scaled_voice)
 
 write('test.wav', 32000, scaled_voice)
 
-scaled_voice_file = wave.open("test.wav", "r")
+# scaled_voice_file = wave.open("test.wav", "r")
 
-scaled_voice = scaled_voice_file.readframes(320000)
+# scaled_voice = scaled_voice_file.readframes(320000)
 
-print(len(scaled_voice))
-print(RATE * FRAME_DURATION / 1000)
+# print(len(scaled_voice))
+# print(RATE * FRAME_DURATION / 1000)
 
-speech_ratio = 0
-speech_total = 0
+# speech_ratio = 0
+# speech_total = 0
 
-samples =  int(RATE*RECORD_SECONDS/(RATE * FRAME_DURATION / 1000))
+# samples =  int(RATE*RECORD_SECONDS/(RATE * FRAME_DURATION / 1000))
 
-for i in range(0, samples):
-	sample = b''.join(scaled_voice[((2*RATE * FRAME_DURATION / 1000))*i : ((2*RATE * FRAME_DURATION / 1000))*(i+1)])
-	print(len(sample))
-	speech_exists = vad.is_speech(sample, RATE)
-	speech_total = speech_total + speech_exists
-	print('Contains speech: %s' % (vad.is_speech(sample, RATE)))
+# for i in range(0, samples):
+# 	sample = b''.join(scaled_voice[((2*RATE * FRAME_DURATION / 1000))*i : ((2*RATE * FRAME_DURATION / 1000))*(i+1)])
+# 	print(len(sample))
+# 	speech_exists = vad.is_speech(sample, RATE)
+# 	speech_total = speech_total + speech_exists
+# 	print('Contains speech: %s' % (vad.is_speech(sample, RATE)))
 
-speech_ratio = speech_total/float(samples)
+# speech_ratio = speech_total/float(samples)
 
+print("Sending the file over to google for speech recognition...")
 
-print(speech_ratio)
+AUDIO_FILE = path.join(path.dirname(path.realpath(__file__)), "test.wav")
+
+r = sr.Recognizer()
+with sr.AudioFile(AUDIO_FILE) as source:
+    audio = r.record(source)
+
+try:
+    print("Google Speech Recognition thinks you said " + r.recognize_google(audio))
+except sr.UnknownValueError:
+    print("Google Speech Recognition could not understand audio")
+except sr.RequestError as e:
+    print("Could not request results from Google Speech Recognition service; {0}".format(e))
