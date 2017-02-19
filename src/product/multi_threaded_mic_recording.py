@@ -126,6 +126,3 @@ def begin_streaming(mic_arr, music_arr, data_ready, data_sent):
 
 	
 
-	
-begin_streaming()
-

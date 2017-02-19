@@ -20,6 +20,7 @@ def lower_vol(percentLowered = 10):
 	for x in range(0, percentLowered + 1):
 		call(["amixer", "-D", "pulse", "sset", "Master", "1%-"])
 		time.sleep(.05)
+	
 
 def reset():
     print("Resetting volue..")
