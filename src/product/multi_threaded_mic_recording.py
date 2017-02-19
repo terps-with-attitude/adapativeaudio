@@ -1,6 +1,7 @@
 import pyaudio
 import wave
 import threading
+import numpy as np
 
 FORMAT = pyaudio.paInt16
 CHANNELS = 1
@@ -9,19 +10,6 @@ CHUNK = 1
 RECORD_SECONDS = 5
 WAVE_OUTPUT_FILENAME = "file.wav"
 WAVE_OUTPUT_FILENAME2 = "file2.wav"
-
-# pulseID = 0
-# pulse_monitorID = 0
-
-#audio #= pyaudio.PyAudio()
-
-
-# for i in range(audio.get_device_count()):
-#     if((audio.get_device_info_by_index(i))['name'] == 'pulse'):
-#         pulseID = i
-
-#     if((audio.get_device_info_by_index(i))['name'] == 'pulse_monitor'):
-#         pulse_monitorID = i
 
 
 class _Microphone_Thread(threading.Thread):
@@ -61,16 +49,8 @@ class _Microphone_Thread(threading.Thread):
         stream2.close()
         return self.frames2 
 
-    def write2(self, frames2):
-        waveFile2 = wave.open(WAVE_OUTPUT_FILENAME2, 'wb')
-        waveFile2.setnchannels(CHANNELS)
-        waveFile2.setsampwidth(audio.get_sample_size(FORMAT))
-        waveFile2.setframerate(RATE)
-        waveFile2.writeframes(b''.join(frames2))
-        waveFile2.close()   
-
     def run(self):
-        self.write2(self.record2())
+        self.record2()
 
 class _Music_Thread(threading.Thread):
 
@@ -106,26 +86,17 @@ class _Music_Thread(threading.Thread):
         stream.close()
         return self.frames
 
-    def write1(self, frames):
-        waveFile = wave.open(WAVE_OUTPUT_FILENAME, 'wb')
-        waveFile.setnchannels(CHANNELS)
-        waveFile.setsampwidth(audio.get_sample_size(FORMAT))
-        waveFile.setframerate(RATE)
-        waveFile.writeframes(b''.join(frames))
-        waveFile.close()
 
     def run(self):
-        self.write1(self.record1())
+        self.record1()
 
 
 
 
-def begin_streaming():
+def begin_streaming(mic_arr, music_arr, data_ready, data_sent):
 
 	global audio, pulse_monitorID, pulseID
 	audio = pyaudio.PyAudio()
-	mic_frames = []
-	music_frames = []
 
 	for i in range(audio.get_device_count()):
 	    if((audio.get_device_info_by_index(i))['name'] == 'pulse'):
@@ -134,19 +105,26 @@ def begin_streaming():
 	    if((audio.get_device_info_by_index(i))['name'] == 'pulse_monitor'):
 	        pulse_monitorID = i	
 
-	mic_data_recorded = threading.Event()
-	music_data_recorded = threading.Event()
+		mic_data_recorded = threading.Event()
+		music_data_recorded = threading.Event()
 
-	mic_Thread = _Microphone_Thread(mic_data_recorded, music_data_recorded, mic_frames)
-	music_ThreadThing = _Music_Thread(mic_data_recorded, music_data_recorded, music_frames)
+	while True:
 
-	mic_Thread.start()
-	music_ThreadThing.start()
+		data_ready.clear()
 
-	mic_Thread.join()
-	music_ThreadThing.join()
+		mic_Thread = _Microphone_Thread(mic_data_recorded, music_data_recorded, mic_arr)
+		music_ThreadThing = _Music_Thread(mic_data_recorded, music_data_recorded, music_arr)
 
-	return mic_frames, music_frames
+		mic_Thread.start()
+		music_ThreadThing.start()
+
+		mic_Thread.join()
+		music_ThreadThing.join()
+
+		data_ready.set()
+		data_sent.wait()
+
+	
 
 	
 begin_streaming()
