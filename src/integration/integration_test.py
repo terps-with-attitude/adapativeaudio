@@ -52,35 +52,46 @@ music = wave.open("music.wav", "r")
 voice = wave.open("voice.wav", "r")
 
 
-music.readframes(10000000)
 
-music_frames = music.readframes(80000)
-voice_frames = voice.readframes(160000)
-
-u = np.fromstring(music_frames, np.int16)
-u = np.float64(u)
+voice = wave.open("musicvoice.wav", "r")
+music = wave.open("music.wav", "r")
 
 
-v = np.fromstring(voice_frames, np.int16)
-v = np.float64(v)
-v = np.pad(v, (0, 160000 - len(v)%160000), mode = 'constant')
-#v = ''.join(frames)
-#v = np.fromstring(v, np.int16)
-#v = np.float64(v)
 
-d = u+v
+full_e = np.array([])
+full_u = np.array([])
+full_d = np.array([])
+
+i = 0
+
+while i < 80: 
+	music_frames = music.readframes(10000)
+	voice_frames = voice.readframes(10000)
 
 
-# Apply adaptive filter
-M = 100  # Number of filter taps in adaptive filter
-step = .0001  # Step size
-y, e, w = adf.nlms(u, d, M, step, returnCoeffs=True)
+	u = np.fromstring(music_frames, np.int16)
+	u = np.float64(u)
 
-scaled_voice = np.int16(e/np.max(np.abs(e)) * 32767)
+	print(i)
 
-voice_len = len(scaled_voice)
+	d = np.fromstring(voice_frames, np.int16)
+	d = np.float64(d)
 
-write('test.wav', 32000, scaled_voice)
+
+	# Apply adaptive filter
+	M = 20  # Number of filter taps in adaptive filter
+	step = 0.1  # Step size
+	y, e, w = adf.nlms(u, d, M, step, returnCoeffs=True)
+
+	full_e = np.concatenate([full_e, e])
+	full_d = np.concatenate([full_d, d])
+	full_u = np.concatenate([full_u, u])
+	i += 1
+
+scaled = np.int16(full_e/np.max(np.abs(full_e)) * 32767)
+
+write('splitaudio.wav', 32000, scaled)
+
 
 # scaled_voice_file = wave.open("test.wav", "r")
 
