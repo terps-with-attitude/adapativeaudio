@@ -49,8 +49,8 @@ while True:
 	mic_frames = wave.open("mic.wav", 'r')
 	music_frames = wave.open("music.wav", 'r')
 
-	print("*******************************")
-	analyze_data(mic_frames.readframes(160000), music_frames.readframes(160000))
+	print("Starting data analysis...")
+	analyze_data(mic_frames.readframes(220500), music_frames.readframes(220500))
 	
 	mic_frames.close()
 	music_frames.close()
@@ -63,5 +63,6 @@ while True:
 	time.sleep(.03)
 
 	secondTime = time.mktime(time.gmtime())
-	print("it took %d seconds", secondTime - firstTime)
+	print("it took seconds")
+	print(secondTime - firstTime)
 		
