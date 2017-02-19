@@ -67,7 +67,7 @@ while i < 80:
 
 
 
-plt.show()
+#plt.show()
 
 
 scaled = np.int16(full_e/np.max(np.abs(full_e)) * 32767)
