@@ -2,11 +2,12 @@ import pyaudio
 import wave
 import threading
 import numpy as np
+import time
 
 FORMAT = pyaudio.paInt16
 CHANNELS = 1
 RATE = 32000
-CHUNK = 1
+CHUNK = 1024
 RECORD_SECONDS = 5
 WAVE_OUTPUT_FILENAME = "file.wav"
 WAVE_OUTPUT_FILENAME2 = "file2.wav"
@@ -32,26 +33,34 @@ class _Microphone_Thread(threading.Thread):
                         frames_per_buffer=CHUNK,
                         input_device_index = self.pulseID)
 
-        print("recording...")
+        print("recording mic...")
         
-        for i in range(0, int(RATE / CHUNK * RECORD_SECONDS)):
+        numberOfFrames = int(RATE / CHUNK * RECORD_SECONDS)
+
+        
+
+        for i in range(0, numberOfFrames):
 
             data2 = stream2.read(CHUNK)
-            np.append(self.frames2, data2)
+            self.frames2.append(data2)
 
-            if(len(self.frames2) == 32000 * 5):
+
+            
+
+            if(len(self.frames2) >= numberOfFrames):
             	self.mic_event.set()
-            	print("the mic data is ready to send, now waiting for music")
+            	#print("the mic data is ready to send, now waiting for music")
             	self.music_event.wait()
 
+        
 
-
-        print("finished recording")
+        print("finished recording mic")
         #print(frames)
 
         # stop Recording
         stream2.stop_stream()
         stream2.close()
+        #print(self.frames2)
         return self.frames2 
 
     def run(self):
@@ -74,18 +83,25 @@ class _Music_Thread(threading.Thread):
                         frames_per_buffer=CHUNK,
                         input_device_index = self.pulse_monitorID)
 
-        print("recording...")
+        print("recording music...")
         
-        for i in range(0, int(RATE / CHUNK * RECORD_SECONDS)):
-            data = stream.read(CHUNK)
-            np.append(self.frames, data)
+        numberOfFrames = int(RATE / CHUNK * RECORD_SECONDS)
+		
 
-            if(len(self.frames) == 32000 * 5):
+        for i in range(0, numberOfFrames):
+            data = stream.read(CHUNK)
+            self.frames.append(data)
+
+
+            #print("the length of frames is")
+            #print(len(self.frames))
+
+            if(len(self.frames) >= numberOfFrames):
             	self.music_event.set()
-            	print("the music data is ready to send, now waiting for mic")
+            	#print("the music data is ready to send, now waiting for mic")
             	self.mic_event.wait()
 
-        print("finished recording")
+        print("finished recording music")
         #print(frames)
 
         # stop Recording
@@ -110,19 +126,36 @@ def begin_streaming(mic_arr, music_arr, data_ready, data_sent):
 
     print("streaming setup done.")
 
-    data_ready.clear()
+    while True:
+		firstTime = time.mktime(time.gmtime())
 
-    mic_Thread = _Microphone_Thread(mic_data_recorded, music_data_recorded, mic_arr)
-    music_ThreadThing = _Music_Thread(mic_data_recorded, music_data_recorded, music_arr)
+		data_ready.clear()
 
-    mic_Thread.start()
-    music_ThreadThing.start()
 
-    mic_Thread.join()
-    music_ThreadThing.join()
 
-    data_ready.set()
-    data_sent.wait()
+		mic_Thread = _Microphone_Thread(mic_data_recorded, music_data_recorded, mic_arr)
+		music_ThreadThing = _Music_Thread(mic_data_recorded, music_data_recorded, music_arr)
+
+		mic_Thread.start()
+		music_ThreadThing.start()
+
+		mic_Thread.join()
+		music_ThreadThing.join()
+
+		print("everything joined")
+
+		data_ready.set()
+		if(len(mic_arr) == 0 || len(music_arr) == 0):
+			continue
+		data_sent.wait()
+
+		secondTime = time.mktime(time.gmtime())
+		print("it took")
+		print(secondTime - firstTime)
+	    	
+
+
+
 
 	
 

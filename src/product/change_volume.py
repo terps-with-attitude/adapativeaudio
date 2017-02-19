@@ -22,7 +22,7 @@ def lower_vol(percentLowered = 10):
 	
 
 def reset():
-    print("Resetting volue..")
+    print("Resetting volume...")
     currentVol = get_system_vol()
     for x in range(0, default_vol - currentVol + 1):
         call(["amixer", "-D", "pulse", "sset", "Master","1%+"])

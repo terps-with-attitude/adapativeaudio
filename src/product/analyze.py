@@ -23,13 +23,15 @@ def analyze_data(music_frames, mic_input_frames):
     full_d = np.array([])
 
     for i in range(0, (RATE * FRAME_DURATION) / 10000):
-        print("Stage: " + str(i))
-        u = np.fromstring(music_frames, np.int16)
-        u = np.float64(u)
+        #print("Stage: " + str(i))
+
+        u = np.fromstring(music_frames[0], dtype = np.int16)
+        u = np.float64(np.fromstring(music_frames[0], dtype = np.int16))
+       
+        d = np.fromstring(mic_input_frames[0], dtype = np.int16)
+        d = np.float64(np.fromstring(mic_input_frames[0], dtype = np.int16))
         
-        d = np.fromstring(mic_input_frames, np.int16)
-        d = np.float64(d)
-        
+      
         
         # Apply adaptive filter
         M = 20  # Number of filter taps in adaptive filter
