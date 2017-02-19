@@ -22,7 +22,9 @@ data_streaming.start()
 
 audio = pyaudio.PyAudio()
 
-for x in range (0,4):
+while True:
+	firstTime = time.mktime(time.gmtime())
+
 	data_sent.clear()
 	
 	data_ready.wait()
@@ -30,31 +32,24 @@ for x in range (0,4):
 	new_mic_arr = mic_arr
 	new_music_arr = music_arr
 
-	# print("current iteration is ", x)
-
-	# if(len(mic_arr) == 0 or len(music_arr) == 0):
-	# 	print("this is mic")
-	# 	print(mic_arr)
-	# 	print("this is music")
-	# 	print(music_arr)
-
-	waveFile = wave.open("mic" + str(x) + ".wav", 'wb')
+	waveFile = wave.open("mic.wav", 'wb')
 	waveFile.setnchannels(1)
 	waveFile.setsampwidth(audio.get_sample_size(pyaudio.paInt16))
 	waveFile.setframerate(32000)
 	waveFile.writeframes(b''.join(new_mic_arr))
 	waveFile.close()
 
-	waveFile2 = wave.open("music" + str(x) +".wav", 'wb')
+	waveFile2 = wave.open("music.wav", 'wb')
 	waveFile2.setnchannels(1)
 	waveFile2.setsampwidth(audio.get_sample_size(pyaudio.paInt16))
 	waveFile2.setframerate(32000)
 	waveFile2.writeframes(b''.join(new_music_arr))
 	waveFile2.close()
 
-	mic_frames = wave.open("mic" + str(x) + ".wav", 'r')
-	music_frames = wave.open("music" + str(x) + ".wav", 'r')
+	mic_frames = wave.open("mic.wav", 'r')
+	music_frames = wave.open("music.wav", 'r')
 
+	print("*******************************")
 	analyze_data(mic_frames.readframes(160000), music_frames.readframes(160000))
 	
 	mic_frames.close()
@@ -67,6 +62,6 @@ for x in range (0,4):
 	data_sent.set()
 	time.sleep(.03)
 
-	if(x == 3):
-		print("**********THIS IS THE LAST ONE******")
+	secondTime = time.mktime(time.gmtime())
+	print("it took %d seconds", secondTime - firstTime)
 		

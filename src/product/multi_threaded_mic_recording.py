@@ -49,7 +49,7 @@ class _Microphone_Thread(threading.Thread):
 
             if(len(self.frames2) >= numberOfFrames):
             	self.mic_event.set()
-            	#print("the mic data is ready to send, now waiting for music")
+            	print("the mic data is ready to send, now waiting for music")
             	self.music_event.wait()
 
         
@@ -98,7 +98,7 @@ class _Music_Thread(threading.Thread):
 
             if(len(self.frames) >= numberOfFrames):
             	self.music_event.set()
-            	#print("the music data is ready to send, now waiting for mic")
+            	print("the music data is ready to send, now waiting for mic")
             	self.mic_event.wait()
 
         print("finished recording music")
@@ -146,8 +146,6 @@ def begin_streaming(mic_arr, music_arr, data_ready, data_sent):
 
 		data_ready.set()
 
-		print("mic array len is")
-		print(len(mic_arr))
 
 		# if(len(mic_arr) == 0 or len(music_arr) == 0):
 		# 	print("continued...")
