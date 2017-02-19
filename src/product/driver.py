@@ -35,14 +35,14 @@ while True:
 	waveFile = wave.open("mic.wav", 'wb')
 	waveFile.setnchannels(1)
 	waveFile.setsampwidth(audio.get_sample_size(pyaudio.paInt16))
-	waveFile.setframerate(32000)
+	waveFile.setframerate(44100)
 	waveFile.writeframes(b''.join(new_mic_arr))
 	waveFile.close()
 
 	waveFile2 = wave.open("music.wav", 'wb')
 	waveFile2.setnchannels(1)
 	waveFile2.setsampwidth(audio.get_sample_size(pyaudio.paInt16))
-	waveFile2.setframerate(32000)
+	waveFile2.setframerate(44100)
 	waveFile2.writeframes(b''.join(new_music_arr))
 	waveFile2.close()
 
@@ -50,7 +50,7 @@ while True:
 	music_frames = wave.open("music.wav", 'r')
 
 	print("Starting data analysis...")
-	analyze_data(mic_frames.readframes(220500), music_frames.readframes(220500))
+	analyze_data(music_frames.readframes(220500),mic_frames.readframes(220500))
 	
 	mic_frames.close()
 	music_frames.close()

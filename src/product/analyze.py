@@ -58,14 +58,14 @@ def analyze_data(music_frames, mic_input_frames):
 
     W_v = fftfreq(full_v.size, d=1.0/FRAME_RATE)
     rft_v = rfft(full_v)
-    rft_v[(W_v > 255)] = 0
-    rft_v[(W_v < 85)] = 0
+    rft_v[(W_v > 700)] = 0
+    rft_v[(W_v < 400)] = 0
     full_v_cut = irfft(rft_v)
 
     W_u = fftfreq(full_u.size, d=1.0/FRAME_RATE)
     rft_u = rfft(full_u)
-    rft_u[(W_u > 255)] = 0
-    rft_u[(W_u < 85)] = 0
+    rft_u[(W_u > 700)] = 0
+    rft_u[(W_u < 400)] = 0
     full_u_cut = irfft(rft_u)
 
     full_y = np.array([])
@@ -95,8 +95,8 @@ def analyze_data(music_frames, mic_input_frames):
 
     W_e = fftfreq(full_e.size, d=1.0/FRAME_RATE)
     rft_e = rfft(full_e)
-    rft_e[(W_e > 255)] = 0
-    rft_e[(W_e < 85)] = 0
+    rft_e[(W_e > 700)] = 0
+    rft_e[(W_e < 400)] = 0
     full_e_cut = irfft(rft_e)
 
     peak_finder = map(lambda x: abs(x), full_e_cut)
@@ -111,7 +111,7 @@ def analyze_data(music_frames, mic_input_frames):
 
 
     plt.figure()
-    plt.plot(full_e_cut)
+    plt.plot(full_u_cut)
     plt.grid()
 
     plt.figure()
@@ -122,8 +122,9 @@ def analyze_data(music_frames, mic_input_frames):
     plt.show()
     peaks =  signal.find_peaks_cwt(peak_finder, np.array([1000,2000,3000,4000,5000]), noise_perc = 75)
 
+    peaks_filtered = np.array(filter(lambda x: peak_finder[x] >= AMP_CUTOFF, peaks))
     
-    process_split_audio(peaks)
+    process_split_audio(peaks_filtered)
 
 def process_split_audio(peaks):
     print("Processing voice detection for split audio...")
@@ -162,7 +163,7 @@ def process_split_audio(peaks):
 
     print("# of peaks: ")
     print(len(peaks))
-    if(len(peaks) > 1):
+    if(len(peaks) >= 1):
         #lower_vol()
         pass
 
