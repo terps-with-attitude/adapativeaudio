@@ -2,6 +2,7 @@ import os
 import wave
 import pyaudio
 import sys
+import time
 from multi_threaded_mic_recording import begin_streaming
 from change_volume import setup_vol
 from analyze import analyze_data
@@ -21,7 +22,7 @@ data_streaming.start()
 
 audio = pyaudio.PyAudio()
 
-for x in range (0,3):
+for x in range (0,4):
 	data_sent.clear()
 	
 	data_ready.wait()
@@ -29,12 +30,13 @@ for x in range (0,3):
 	new_mic_arr = mic_arr
 	new_music_arr = music_arr
 
-	print("current iteration is ", x)
+	# print("current iteration is ", x)
 
-	print("this is mic")
-	print(mic_arr)
-	print("this is music")
-	print(music_arr)
+	# if(len(mic_arr) == 0 or len(music_arr) == 0):
+	# 	print("this is mic")
+	# 	print(mic_arr)
+	# 	print("this is music")
+	# 	print(music_arr)
 
 	waveFile = wave.open("mic" + str(x) + ".wav", 'wb')
 	waveFile.setnchannels(1)
@@ -50,14 +52,21 @@ for x in range (0,3):
 	waveFile2.writeframes(b''.join(new_music_arr))
 	waveFile2.close()
 
-	#analyze_data(new_music_arr, new_mic_arr)
+	mic_frames = wave.open("mic" + str(x) + ".wav", 'r')
+	music_frames = wave.open("music" + str(x) + ".wav", 'r')
+
+	analyze_data(mic_frames.readframes(160000), music_frames.readframes(160000))
+	
+	mic_frames.close()
+	music_frames.close()
 
 	del mic_arr[:]
 	del music_arr[:]
 
 
 	data_sent.set()
+	time.sleep(.03)
 
-	if(x == 2):
+	if(x == 3):
 		print("**********THIS IS THE LAST ONE******")
 		

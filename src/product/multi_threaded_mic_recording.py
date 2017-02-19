@@ -127,7 +127,7 @@ def begin_streaming(mic_arr, music_arr, data_ready, data_sent):
     print("streaming setup done.")
 
     while True:
-		firstTime = time.mktime(time.gmtime())
+		# firstTime = time.mktime(time.gmtime())
 
 		data_ready.clear()
 
@@ -145,13 +145,19 @@ def begin_streaming(mic_arr, music_arr, data_ready, data_sent):
 		print("everything joined")
 
 		data_ready.set()
-		if(len(mic_arr) == 0 || len(music_arr) == 0):
-			continue
+
+		print("mic array len is")
+		print(len(mic_arr))
+
+		# if(len(mic_arr) == 0 or len(music_arr) == 0):
+		# 	print("continued...")
+		# 	continue
+
 		data_sent.wait()
 
 		secondTime = time.mktime(time.gmtime())
-		print("it took")
-		print(secondTime - firstTime)
+		# print("it took")
+		# print(secondTime - firstTime)
 	    	
 
 

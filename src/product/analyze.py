@@ -18,31 +18,17 @@ FRAME_DURATION = 30  # ms
 
 
 def analyze_data(music_frames, mic_input_frames):    
-    full_e = np.array([])
-    full_u = np.array([])
-    full_d = np.array([])
+    u = np.fromstring(music_frames, np.int16)
+    u = np.float64(u)
 
-    for i in range(0, (RATE * FRAME_DURATION) / 10000):
-        #print("Stage: " + str(i))
-
-        u = np.fromstring(music_frames[0], dtype = np.int16)
-        u = np.float64(np.fromstring(music_frames[0], dtype = np.int16))
-       
-        d = np.fromstring(mic_input_frames[0], dtype = np.int16)
-        d = np.float64(np.fromstring(mic_input_frames[0], dtype = np.int16))
-        
-      
-        
-        # Apply adaptive filter
-        M = 20  # Number of filter taps in adaptive filter
-        step = 0.1  # Step size
-        y, e, w = adf.nlms(u, d, M, step, returnCoeffs=True)
-        
-        full_e = np.concatenate([full_e, e])
-        full_d = np.concatenate([full_d, d])
-        full_u = np.concatenate([full_u, u])
+    d = np.fromstring(mic_input_frames, np.int16)
+    d = np.float64(d)
+    # Apply adaptive filter
+    M = 20  # Number of filter taps in adaptive filter
+    step = 0.1  # Step size
+    y, e, w = adf.nlms(u, d, M, step, returnCoeffs=True)
     
-    scaled = np.int16(full_e/np.max(np.abs(full_e)) * 32767) 
+    scaled = np.int16(e/np.max(np.abs(e)) * 32767) 
     write('splitaudio.wav', 32000, scaled)
     process_split_audio()
 
