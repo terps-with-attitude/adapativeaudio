@@ -1,5 +1,5 @@
 import os
-import multi_threaded_mic_recording
+from multi_threaded_mic_recording import begin_streaming
 from change_volume import setup_vol
 from analyze import analyze_data
 import numpy as np
@@ -12,10 +12,13 @@ music_arr = np.array([])
 data_received = threading.Event()
 data_sent = threading.Event()
 
+data_streaming = threading.Thread(
+        target=begin_streaming, args=(mic_arr, music_arr, data_received, data_sent))
+data_streaming.start()
+
 while True:
 	data_sent.clear()
 	
-	begin_streaming(mic_arr, music_arr, data_received, data_sent)
 
 	data_received.wait()
 

@@ -14,25 +14,30 @@ WAVE_OUTPUT_FILENAME2 = "file2.wav"
 
 class _Microphone_Thread(threading.Thread):
 
+    
     def __init__(self, mic_event, music_event, frames2):
         threading.Thread.__init__(self)
         self.mic_event = mic_event
         self.music_event = music_event
         self.frames2 = frames2
+        for i in range(audio.get_device_count()):
+            if((audio.get_device_info_by_index(i))['name'] == 'pulse'):
+                self.pulseID = i
 
 
     def record2(self):
+                
         stream2 = audio.open(format=FORMAT, channels=CHANNELS,
                         rate=RATE, input=True,
                         frames_per_buffer=CHUNK,
-                        input_device_index = pulseID)
+                        input_device_index = self.pulseID)
 
         print("recording...")
         
         for i in range(0, int(RATE / CHUNK * RECORD_SECONDS)):
 
             data2 = stream2.read(CHUNK)
-            self.frames2.append(data2)
+            np.append(self.frames2, data2)
 
             if(len(self.frames2) == 32000 * 5):
             	self.mic_event.set()
@@ -54,24 +59,26 @@ class _Microphone_Thread(threading.Thread):
 
 class _Music_Thread(threading.Thread):
 
-
     def __init__(self, mic_event, music_event, frames):
         threading.Thread.__init__(self)
         self.mic_event = mic_event
         self.music_event = music_event
         self.frames = frames
+        for i in range(audio.get_device_count()):
+            if ((audio.get_device_info_by_index(i))['name'] == 'pulse_monitor'):
+                self.pulse_monitorID = i	
 
     def record1(self):
         stream = audio.open(format=FORMAT, channels=CHANNELS,
                         rate=RATE, input=True,
                         frames_per_buffer=CHUNK,
-                        input_device_index = pulse_monitorID)
+                        input_device_index = self.pulse_monitorID)
 
         print("recording...")
         
         for i in range(0, int(RATE / CHUNK * RECORD_SECONDS)):
             data = stream.read(CHUNK)
-            self.frames.append(data)
+            np.append(self.frames, data)
 
             if(len(self.frames) == 32000 * 5):
             	self.music_event.set()
@@ -94,35 +101,28 @@ class _Music_Thread(threading.Thread):
 
 
 def begin_streaming(mic_arr, music_arr, data_ready, data_sent):
+    print("starting stream")
+    global audio
+    audio = pyaudio.PyAudio()
+        
+    mic_data_recorded = threading.Event()
+    music_data_recorded = threading.Event()
 
-	global audio, pulse_monitorID, pulseID
-	audio = pyaudio.PyAudio()
+    print("streaming setup done.")
 
-	for i in range(audio.get_device_count()):
-	    if((audio.get_device_info_by_index(i))['name'] == 'pulse'):
-	        pulseID = i
+    data_ready.clear()
 
-	    if((audio.get_device_info_by_index(i))['name'] == 'pulse_monitor'):
-	        pulse_monitorID = i	
+    mic_Thread = _Microphone_Thread(mic_data_recorded, music_data_recorded, mic_arr)
+    music_ThreadThing = _Music_Thread(mic_data_recorded, music_data_recorded, music_arr)
 
-		mic_data_recorded = threading.Event()
-		music_data_recorded = threading.Event()
+    mic_Thread.start()
+    music_ThreadThing.start()
 
-	while True:
+    mic_Thread.join()
+    music_ThreadThing.join()
 
-		data_ready.clear()
-
-		mic_Thread = _Microphone_Thread(mic_data_recorded, music_data_recorded, mic_arr)
-		music_ThreadThing = _Music_Thread(mic_data_recorded, music_data_recorded, music_arr)
-
-		mic_Thread.start()
-		music_ThreadThing.start()
-
-		mic_Thread.join()
-		music_ThreadThing.join()
-
-		data_ready.set()
-		data_sent.wait()
+    data_ready.set()
+    data_sent.wait()
 
 	
 
